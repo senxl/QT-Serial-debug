@@ -7,8 +7,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //默认选择COM1
-    ui->combox->setCurrentIndex(1);
+    //默认选择COM3
+    ui->combox->setCurrentIndex(3);
     //按钮响应
     PushButtonConnect();
 }
@@ -19,8 +19,11 @@ MainWindow::~MainWindow()
 }
 void MainWindow::PushButtonConnect()
 {
-    connect(ui->pb_start,&QPushButton::clicked,this,&MainWindow::pb_start);
-    connect(ui->pb_stop,&QPushButton::clicked,this,&MainWindow::pb_stop);
+    connect(ui->pb_start,&QPushButton::clicked,this,[this](){
+        ui->pb_start->text()=="开始连接"?pb_start() : pb_stop();
+        ui->pb_start->text()=="开始连接"?ui->pb_start->setText("断开连接") : ui->pb_start->setText("开始连接");
+        });
+
     connect(ui->pb_send,&QPushButton::clicked,this,&MainWindow::pb_send);
     connect(ui->pb_clear,&QPushButton::clicked,this,&MainWindow::pb_clear);
     connect(ui->theme,&QPushButton::clicked,this,&MainWindow::theme);
@@ -42,13 +45,15 @@ void MainWindow::pb_start()
             //串口数据位设置
             qsp->setDataBits(QSerialPort::DataBits(ui->databox->currentText().toInt()));
             //串口停止位设置
-            qsp->setStopBits(QSerialPort::StopBits(ui->stopbox->currentIndex()));
+            qsp->setStopBits(QSerialPort::StopBits(ui->stopbox->currentIndex()+1));
             //串口校验位设置
             qsp->setParity( (QSerialPort::Parity)(ui->checkbox->currentIndex()<1 ? \
                                                       ui->checkbox->currentIndex() : \
                                                       ui->checkbox->currentIndex()+1) );
             //开启串口
             qsp->open(QIODevice::ReadWrite);
+            //修改按钮颜色
+            ui->pb_start->setStyleSheet("background-color: #607D8B; color: white;");
             //监听串口 读取数据
             connect(qsp,&QSerialPort::readyRead,this,&MainWindow::read_port);
         }
@@ -58,6 +63,8 @@ void MainWindow::pb_stop()
 {
     //串口关闭
     qsp->close();
+    //修改按钮颜色
+    ui->pb_start->setStyleSheet("background-color: #E1E1E1; color: black;");
 }
 void MainWindow::pb_send()
 {
@@ -105,9 +112,9 @@ void MainWindow::theme()
     //修改样式表实现不同显示效果
     if(ui->theme->isChecked())
     {
-        ui->textBrowser->setStyleSheet("background-color: black; color:#FFF;");
+        ui->textBrowser->setStyleSheet("background-color: black; color: white;");
     }else{
-        ui->textBrowser->setStyleSheet("background-color: white; color:#000;");
+        ui->textBrowser->setStyleSheet("background-color: white; color: black;");
     }
 }
 void MainWindow::hexsend()

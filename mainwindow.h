@@ -6,6 +6,7 @@
 #include <QSerialPortInfo>
 #include <QDebug>
 #include <QMessageBox>
+#include <QToolTip>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -26,7 +27,7 @@ private:
 
     void PushButtonConnect();
 public slots:
-    void pb_start();
+    bool pb_start();
     void pb_stop();
     void pb_send();
     void read_port();

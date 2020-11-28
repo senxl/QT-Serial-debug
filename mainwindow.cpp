@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -20,17 +21,20 @@ MainWindow::~MainWindow()
 void MainWindow::PushButtonConnect()
 {
     connect(ui->pb_start,&QPushButton::clicked,this,[this](){
-        ui->pb_start->text()=="开始连接"?pb_start() : pb_stop();
-        ui->pb_start->text()=="开始连接"?ui->pb_start->setText("断开连接") : ui->pb_start->setText("开始连接");
+        bool status=false;
+        if(ui->pb_start->text()=="开始连接")
+            status=pb_start();
+        else
+            pb_stop();
+        status?ui->pb_start->setText("断开连接"):ui->pb_start->setText("开始连接");
         });
 
     connect(ui->pb_send,&QPushButton::clicked,this,&MainWindow::pb_send);
     connect(ui->pb_clear,&QPushButton::clicked,this,&MainWindow::pb_clear);
     connect(ui->theme,&QPushButton::clicked,this,&MainWindow::theme);
     connect(ui->hexsend,&QPushButton::clicked,this,&MainWindow::hexsend);
-
 }
-void MainWindow::pb_start()
+bool MainWindow::pb_start()
 {
     //获取可用串口
     QList<QSerialPortInfo> port = qspi->availablePorts();
@@ -56,8 +60,12 @@ void MainWindow::pb_start()
             ui->pb_start->setStyleSheet("background-color: #607D8B; color: white;");
             //监听串口 读取数据
             connect(qsp,&QSerialPort::readyRead,this,&MainWindow::read_port);
+            return true;
         }
     }
+    QPoint point(this->x()+this->frameGeometry().width()/3,this->y()+this->frameGeometry().height()/3);
+    QToolTip::showText(point,"连接失败，请检查串口号状态");
+    return false;
 }
 void MainWindow::pb_stop()
 {
